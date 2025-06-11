@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tic-Tac-Toe Game</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1e1f26, #283655);
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    .mode-selector {
+      margin-bottom: 20px;
+    }
+    .mode-selector select {
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: none;
+    }
+    #board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      gap: 8px;
+    }
+    .cell {
+      width: 100px;
+      height: 100px;
+      background-color: #4e4e50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: background 0.3s;
+    }
+    .cell:hover {
+      background-color: #6e7f80;
+    }
+    #status {
+      margin-top: 20px;
+      font-size: 1.2rem;
+    }
+    button {
+      margin-top: 10px;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: none;
+      background-color: #00adb5;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #00bfa6;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tic-Tac-Toe</h1>
+  <div class="mode-selector">
+    <label for="mode">Select Mode:</label>
+    <select id="mode">
+      <option value="pvp">Player vs Player</option>
+      <option value="pvc">Player vs Computer</option>
+    </select>
+  </div>
+  <div id="board"></div>
+  <div id="status"></div>
+  <button onclick="resetGame()">Restart Game</button>
+
+  <script>
+    const board = document.getElementById('board');
+    const statusDiv = document.getElementById('status');
+    const modeSelect = document.getElementById('mode');
+
+    let cells = Array(9).fill(null);
+    let currentPlayer = 'X';
+    let gameActive = true;
+
+    const winPatterns = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6]
+    ];
+
+    function createBoard() {
+      board.innerHTML = '';
+      cells = Array(9).fill(null);
+      for (let i = 0; i < 9; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.dataset.index = i;
+        cell.addEventListener('click', () => handleMove(i));
+        board.appendChild(cell);
+      }
+      statusDiv.textContent = `Player ${currentPlayer}'s Turn`;
+    }
+
+    function handleMove(index) {
+      if (!gameActive || cells[index]) return;
+      cells[index] = currentPlayer;
+      updateBoard();
+
+      if (checkWin(currentPlayer)) {
+        statusDiv.textContent = `Player ${currentPlayer} Wins!`;
+        gameActive = false;
+      } else if (cells.every(cell => cell)) {
+        statusDiv.textContent = "It's a Draw!";
+        gameActive = false;
+      } else {
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        statusDiv.textContent = `Player ${currentPlayer}'s Turn`;
+
+        if (modeSelect.value === 'pvc' && currentPlayer === 'O') {
+          setTimeout(computerMove, 500);
+        }
+      }
+    }
+
+    function computerMove() {
+      const emptyIndices = cells.map((val, i) => val === null ? i : null).filter(val => val !== null);
+      const randomIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+      handleMove(randomIndex);
+    }
+
+    function updateBoard() {
+      const allCells = document.querySelectorAll('.cell');
+      allCells.forEach((cell, i) => {
+        cell.textContent = cells[i];
+      });
+    }
+
+    function checkWin(player) {
+      return winPatterns.some(pattern =>
+        pattern.every(index => cells[index] === player)
+      );
+    }
+
+    function resetGame() {
+      currentPlayer = 'X';
+      gameActive = true;
+      createBoard();
+    }
+
+    modeSelect.addEventListener('change', resetGame);
+    createBoard();
+  </script>
+</body>
+</html>
